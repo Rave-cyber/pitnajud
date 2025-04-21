@@ -7,12 +7,12 @@ use App\Models\Order;
 
 class OrderController extends Controller
 {
-
     public function index()
-{
-    $orders = Order::all(); // Fetch all orders
-    return view('orders.index', compact('orders'));
-}
+    {
+        $orders = Order::all(); // Fetch all orders
+        return view('orders.index', compact('orders'));
+    }
+
     public function store(Request $request)
     {
         // Validate the request data
@@ -31,7 +31,7 @@ class OrderController extends Controller
             'weight' => $request->weight,
             'date' => $request->date,
             'service_type' => json_encode($request->service_type),
-            'status' => 'Pending', // Default status
+            'status' => 'received', // Set default status to the first in tracking
             'payment_method' => $request->payment_method,
             'amount' => $request->amount,
         ]);
@@ -39,17 +39,18 @@ class OrderController extends Controller
         // Redirect back with a success message
         return redirect()->route('orders.index')->with('success', 'Order created successfully!');
     }
+
     public function updateStatus(Request $request, $id)
     {
+        // Accept all valid statuses from tracking
         $request->validate([
-            'status' => 'required|in:pending,in progress,completed'
+            'status' => 'required|in:Pending,Washing,Drying,Ironing,Ready,Completed'
         ]);
-
+        
         $order = Order::findOrFail($id);
         $order->status = $request->status;
         $order->save();
 
         return redirect()->route('orders.index')->with('success', 'Order status updated successfully!');
     }
-
 }
