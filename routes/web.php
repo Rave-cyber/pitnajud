@@ -27,11 +27,15 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Order routes
-    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
-    Route::post('/orders/{id}/update-status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
-    Route::resource('orders', OrderController::class)->except(['index', 'store']);
-
+    Route::prefix('orders')->name('orders.')->group(function () {
+        Route::get('/', [OrderController::class, 'index'])->name('index');
+        Route::post('/', [OrderController::class, 'store'])->name('store');
+        Route::get('/{order}', [OrderController::class, 'show'])->name('show');
+        Route::post('/{order}/update-status', [OrderController::class, 'updateStatus'])->name('update-status');
+        Route::put('/{order}/mark-paid', [OrderController::class, 'markAsPaid'])->name('mark-paid');
+        Route::put('/{order}/archive', [OrderController::class, 'archiveOrder'])->name('archive');
+        Route::put('/{order}/unarchive', [OrderController::class, 'unarchiveOrder'])->name('unarchive');
+    });
     // Transaction routes
     Route::resource('transactions', TransactionController::class);
 });
@@ -77,10 +81,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
             'destroy' => 'inventory.destroy',
         ]);
         
-    // Corrected Sales Report Routes
+    // Sales Report Routes
     Route::prefix('sales-reports')->name('sales-reports.')->group(function () {
         Route::get('/', [SalesReportController::class, 'index'])->name('index');
         Route::post('/generate', [SalesReportController::class, 'generate'])->name('generate');
+        Route::post('/export/excel', [SalesReportController::class, 'exportExcel'])->name('export.excel');
+        Route::post('/export/pdf', [SalesReportController::class, 'exportPDF'])->name('export.pdf');
     });
 });
 
